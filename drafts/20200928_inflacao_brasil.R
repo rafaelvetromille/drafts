@@ -85,7 +85,7 @@ ggplot(data = data, aes(x = date)) +
                                  "meta" = "Meta de Inflação")) +
   labs(x = '', y = '%',
        title = 'Inflação Cheia, Núcleos e Inflação de Alimentos',
-       caption = 'Fonte: analisemacro.com.br com dados do IBGE',
+       caption = 'Fonte: Elaboração própria com dados do IBGE e BACEN.',
        fill = "Medidas") +
   theme_bw() +
   theme(legend.position = 'top',
