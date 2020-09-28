@@ -1,12 +1,19 @@
-#' Author:
-#' Subject:
+#' Author: Rafael Vetromille
+#' Subject: Inflação Acumulada no Ano
 
-# library(tidyverse)
+# Pacotes
+library(tidyverse)
 library(magrittr)
 
 # Import -----------------------------------------------------------------------
 
+ipca <- rbcb::get_series(list(ipca = '4333'))
+
 # Tidy -------------------------------------------------------------------------
+
+ipca <- ipca %>%
+  group_by(year = lubridate::year(date)) %>%
+  mutate(acum_ano = (cumprod((1 + ipca/100))-1)*100)
 
 # Visualize --------------------------------------------------------------------
 
