@@ -50,7 +50,7 @@ api <- c(
 )
 
 alim_dom <- api %>%
-  purrr::map_dfr(.f = ~ sidrar::get_sidra(api = .x))
+  purrr::map_dfr(.f = ~ sidrar::get_sidra(api = .x)) %>%
   janitor::clean_names() %>%
   dplyr::select(date = mes_codigo, ipca_alim = valor) %>%
   dplyr::mutate(date = parse_date(date, format = "%Y%m"))
