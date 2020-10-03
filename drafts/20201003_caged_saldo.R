@@ -30,9 +30,8 @@ caged <- read_excel(dados, sheet = 'Tabela 5.1', skip = 4, na = '---')
 ggplot(data = caged, aes(x = mes, y = saldos / 1000)) +
   geom_col(aes(fill = variacao)) +
   geom_hline(yintercept = 0, linetype = 'dashed') +
-  geom_text(aes(label = round(saldos / 1000, 0),
-                vjust = ifelse(saldos < 0, 1.5, -1)), size = 3.5,
-            hjust = 0.5, colour = "black", fontface = 'bold') +
+  geom_text(aes(label = round(saldos / 1000, 0), vjust = ifelse(saldos < 0, 1.5, -1)),
+            size = 3.5, hjust = 0.5, colour = "black", fontface = 'bold') +
   scale_fill_manual(values = c('red', 'lightblue')) +
   labs(title = 'Saldo de Admissões e Demissões do CAGED',
        y = 'mil pessoas', x = '',
