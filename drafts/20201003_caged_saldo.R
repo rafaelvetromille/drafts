@@ -4,24 +4,27 @@ library(tidyverse)
 library(readxl)
 library(httr)
 library(scales)
+library(lubridate)
 
 ## 2. Baixar dados
 GET(url = 'http://pdet.mte.gov.br/images/Novo_CAGED/Ago2020/3-tabelas.xlsx',
     config = write_disk(dados <- tempfile(fileext = ".xlsx")))
 
 ## 3. Tratar dados
+
+# Método 1:
 caged <- read_excel(dados, sheet = 'Tabela 5.1', skip = 4, na = '---') %>%
   janitor::clean_names() %>%
   tidyr::drop_na() %>%
   dplyr::mutate(mes = parse_date(mes, format = '%B/%Y', locale = locale('pt')),
                 variacao = ifelse(saldos < 0, 'negativo', 'positivo'))
 
-caged <- read_excel(dados, sheet = 'Tabela 5.1', skip = 4, na = '---') %>%
+# Método 2:
+caged <- read_excel(dados, sheet = 'Tabela 5.1', skip = 4, na = '---')
   janitor::clean_names() %>%
   tidyr::drop_na() %>%
-  dplyr::mutate(mes = dmy(paste('01', mes, sep = '/'), locale = "Portuguese_Brazil.1252"),
+  dplyr::mutate(mes = dmy(paste('01', mes), locale = "Portuguese_Brazil.1252"),
                 variacao = ifelse(saldos < 0, 'negativo', 'positivo'))
-
 
 ## 4. Gráfico
 ggplot(data = caged, aes(x = mes, y = saldos / 1000)) +
@@ -32,8 +35,7 @@ ggplot(data = caged, aes(x = mes, y = saldos / 1000)) +
             hjust = 0.5, colour = "black", fontface = 'bold') +
   scale_fill_manual(values = c('red', 'lightblue')) +
   labs(title = 'Saldo de Admissões e Demissões do CAGED',
-       y = 'mil pessoas',
-       x = '',
+       y = 'mil pessoas', x = '',
        caption = 'Fonte: Elaboração própria com dados do Novo CAGED.') +
   scale_x_date(breaks = '1 month',
                labels = date_format('%b/%y')) +
