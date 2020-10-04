@@ -1,0 +1,82 @@
+---
+title: "Análise da Taxa de Poupança com o R"
+author: "Rafael Vetromille"
+date: "04/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pacotes
+
+```{r, message = FALSE, warning = FALSE}
+library(sidrar)
+library(lubridate)
+library(tidyverse)
+library(zoo)
+library(tibbletime)
+library(seasonal)
+```
+
+## Função rollify
+```{r, message = FALSE, warning = FALSE}
+roll_sum <- rollify(.f = sum, window = 4, unlist = TRUE)
+```
+
+## Baixar dados da poupança
+```{r, message = FALSE, warning = FALSE}
+poupanca <- get_sidra(api = '/t/2072/n1/all/v/933,940/p/all') %>% 
+  
+  janitor::clean_names() %>% 
+
+  dplyr::select(variavel, trimestre = trimestre_codigo, valor) %>%
+  
+  tidyr::pivot_wider(names_from = variavel, values_from = valor) %>% 
+  
+  janitor::clean_names() %>% 
+  
+  dplyr::rename(poup = poupanca_bruta, pib = produto_interno_bruto) %>% 
+  
+  dplyr::mutate(trimestre = as.yearqtr(trimestre, format = '%Y%q'), 
+                poup_trim = poup/pib*100 %>% round(1),
+                poup_ano = roll_sum(poup)/roll_sum(pib)*100 %>% round(1)) %>% 
+  
+  dplyr::mutate(poup_sa = final(seas(ts(poup_trim, start = c(2000, 1), freq = 4))))
+```
+
+\newpage
+
+## Gráfico
+
+```{r pressure, message = FALSE, warning = FALSE}
+ggplot(poupanca, aes(x = trimestre))+
+  
+  geom_line(aes(y = poup_trim, colour = 'Poupança Trimestral'), size = .8) +
+  
+  geom_line(aes(y = poup_ano, colour = 'Poupança 4 Trimestres'), size = .8) + 
+  
+  geom_line(aes(y = poup_sa, colour = 'Poupança Dessazonalizada'), size = .8) + 
+  
+  scale_colour_manual(values = c('Poupança Trimestral' = '#91b8bd',
+                                 'Poupança 4 Trimestres' = '#d17a58',
+                                 'Poupança Dessazonalizada' = '#244747')) +
+  
+  scale_x_yearqtr(breaks = seq(from = min(poupanca$trimestre) + 0.25,
+                               to = max(poupanca$trimestre),
+                               by = 1), format = "%Y Q%q") + 
+  
+  theme_bw() + 
+  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size = 10, face = 'bold'),
+        legend.position = 'top', 
+        legend.title = element_blank()) + 
+  
+  labs(x = '', y = '% PIB',
+       title = 'Taxa de Poupança da Economia Brasileira',
+       caption = 'Fonte: Elaboração própria com dados do IBGE.')
+
+```
+
